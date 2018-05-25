@@ -1,56 +1,57 @@
-# Ansible AUR package manager
-Ansible module to use some AUR helpers as well as a simple internal implementation as a fallback. The following helpers are supported and automatically selected in the order they are listed:
+# Ansible AUR helper
+Ansible module to use some Arch User Repository (AUR) helpers as well as makepkg.
+
+The following helpers are supported and automatically selected in the order they are listed:
+- [aurman](https://github.com/polygamma/aurman)
 - [pacaur](https://github.com/rmarquis/pacaur)
 - [pikaur](https://github.com/actionless/pikaur)
 - [trizen](https://github.com/trizen/trizen)
-- [yaourt](https://github.com/archlinuxfr/yaourt)
+- [pikaur](https://github.com/actionless/pikaur)
 - [yay](https://github.com/Jguer/yay)
-- internal helper
+
+makepkg will be used if no helper was found or if it's specified explicitly.
+- [makepkg](https://wiki.archlinux.org/index.php/makepkg)
 
 ## Options
-|parameter      |required |default |choices                                              |comments|
-|---            |---      |---     |---                                                  |---|
-|name           |no       |        |                                                     |Name or list of names of the package(s) to install or upgrade.|
-|upgrade        |no       |no      |yes, no                                              |Whether or not to upgrade whole system.|
-|use            |no       |auto    |auto, pacaur, picaur, trizen, yaourt, yay, internal  |The helper to use, 'auto' uses the first known helper found, 'internal' uses the internal helper.|
-|skip_installed |no       |no      |yes, no                                              |Skip operations if the package is present.|
+|parameter      |required |default |choices                                      |comments|
+|---            |---      |---     |---                                          |---|
+|name           |no       |        |                                             |Name or list of names of the package(s) to install or upgrade.|
+|upgrade        |no       |no      |yes, no                                      |Whether or not to upgrade whole system.|
+|use            |no       |auto    |auto, pacaur, trizen, yaourt, yay, internal  |The helper to use, 'auto' uses the first known helper found, 'internal' uses the internal helper.|
+|skip_installed |no       |no      |yes, no                                      |Skip operations if the package is present.|
 
 ### Note
 * Either *name* or *upgrade* is required, both cannot be used together.
 * *skip_installed* cannot be used with *upgrade*.
-* In the *use*=*auto* mode, the internal helper is used as a fallback if no known helper is found.
+* In the *use*=*auto* mode, makepkg is used as a fallback if no known helper is found.
 
 ## Installing
-1. Clone the *ansibe-aur* repository in your playbook custom-module directory:
-```
-mkdir --parents library
-cd library
-git clone git@github.com:kewlfft/ansible-aur.git
-```
+### aur-ansible-git AUR package
+The [aur-ansible-git](https://aur.archlinux.org/packages/ansible-aur-git) package is available in the AUR.
+Note the module is installed in `/usr/share/ansible/plugins/modules` which is one of the default module library paths.
 
-2. Link the script to `library/aur`:
+### Manual installation
+Just clone the *ansible-aur* repository into your user custom-module directory:
 ```
-ln --symbolic ansible-aur/aur.py aur
+git clone https://github.com/kewlfft/ansible-aur.git ~/.ansible/plugins/modules/aur
 ```
 
 ## Usage
 ### Note
-* This module aims to cover the AUR only:
-  * For package removal or system upgrade with the repositories, it is recommended to use the official *pacman* module,
-  * Searches are limited to the AUR, using the *--aur* parameter, except for *yay* and *yaourt* which do not support the option and systematically also search the repositories.
+* This module aims to cover the AUR, for package removal or system upgrade with the repositories, it is recommended to use the official *pacman* module,
 * A package is reinstalled only if an update is available, using the *--needed* parameter, except for *yay* which does not support it and systematically reinstalls.
 
 ### Examples
 Use it in a task, as in the following examples:
 ```
-# Install trizen using the internal helper, skip if trizen is already installed
-- aur: name=trizen use=internal skip_installed=true
+# Install trizen using makepkg, skip if trizen is already installed
+- aur: name=trizen use=makepkg skip_installed=true
   become: yes
   become_user: aur_builder
 
 # Install package_name using the first known helper found
 - aur: name=package_name
-  [..]
+  ...
 
 # Install package_name_1 and package_name_2 using trizen
 - aur:
@@ -62,7 +63,7 @@ Use it in a task, as in the following examples:
 
 # Upgrade - using pacaur
 - aur: upgrade=yes use=pacaur
-  [...]
+  ...
 ```
 
 ### Create the "aur_builder" user
