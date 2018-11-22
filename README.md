@@ -2,23 +2,25 @@
 Ansible module to use some Arch User Repository (AUR) helpers as well as makepkg.
 
 The following helpers are supported and automatically selected in the order they are listed:
+- [yay](https://github.com/Jguer/yay)
 - [aurman](https://github.com/polygamma/aurman)
 - [pacaur](https://github.com/rmarquis/pacaur)
 - [pikaur](https://github.com/actionless/pikaur)
 - [trizen](https://github.com/trizen/trizen)
 - [pikaur](https://github.com/actionless/pikaur)
-- [yay](https://github.com/Jguer/yay)
 
-makepkg will be used if no helper was found or if it's specified explicitly.
+*makepkg* will be used if no helper was found or if it is explicitly specified.
 - [makepkg](https://wiki.archlinux.org/index.php/makepkg)
 
 ## Options
-|parameter      |required |default |choices                                      |comments|
-|---            |---      |---     |---                                          |---|
-|name           |no       |        |                                             |Name or list of names of the package(s) to install or upgrade.|
-|upgrade        |no       |no      |yes, no                                      |Whether or not to upgrade whole system.|
-|use            |no       |auto    |auto, pacaur, trizen, yaourt, yay, internal  |The helper to use, 'auto' uses the first known helper found, 'internal' uses the internal helper.|
-|skip_installed |no       |no      |yes, no                                      |Skip operations if the package is present.|
+|parameter      |required |default |choices                                            |comments|
+|---            |---      |---     |---                                                |---|
+|name           |no       |        |                                                   |Name or list of names of the package(s) to install or upgrade.|
+|upgrade        |no       |no      |yes, no                                            |Whether or not to upgrade whole system.|
+|use            |no       |auto    |auto, yay, aurman, pacaur, trizen, pikaur, makepkg |The helper to use, 'auto' uses the first known helper found and makepkg as a fallback.|
+|skip_installed |no       |no      |yes, no                                            |Skip operations if the package is present.|
+|skip_pgp_check |no       |no      |yes, no                                            |Skip verification of PGP signatures. This is useful when installing packages on a host without GnuPG (properly) configured. Only valid with makepkg.|
+|aur_only       |no       |no      |yes, no                                            |Limit operation to the AUR. Compatible with yay, aurman, pacaur and trizen.|
 
 ### Note
 * Either *name* or *upgrade* is required, both cannot be used together.
@@ -26,7 +28,7 @@ makepkg will be used if no helper was found or if it's specified explicitly.
 * In the *use*=*auto* mode, makepkg is used as a fallback if no known helper is found.
 
 ## Installing
-### aur-ansible-git AUR package
+### AUR package
 The [aur-ansible-git](https://aur.archlinux.org/packages/ansible-aur-git) package is available in the AUR.
 Note the module is installed in `/usr/share/ansible/plugins/modules` which is one of the default module library paths.
 
@@ -38,8 +40,8 @@ git clone https://github.com/kewlfft/ansible-aur.git ~/.ansible/plugins/modules/
 
 ## Usage
 ### Note
-* This module aims to cover the AUR, for package removal or system upgrade with the repositories, it is recommended to use the official *pacman* module,
-* A package is reinstalled only if an update is available, using the *--needed* parameter, except for *yay* which does not support it and systematically reinstalls.
+* This module aims to cover the AUR; for package removal or system upgrade with the repositories, it is recommended to use the official *pacman* module,
+* A package is reinstalled only if an update is available, using the *--needed* parameter.
 
 ### Examples
 Use it in a task, as in the following examples:
